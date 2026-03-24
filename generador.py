@@ -6,69 +6,69 @@ from datetime import datetime
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 URL_GROQ = "https://api.groq.com/openai/v1/chat/completions"
 
-def generar_noticia_variada_real():
+def generar_noticia_real_pro():
     if not GROQ_API_KEY: return None
     headers = {"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"}
     
-    # LISTA DE TEMAS REALES (Sin nada de Godot para variar)
-    fuentes_reales = [
-        "Nuevos procesadores NVIDIA RTX 50 series y AMD Ryzen 2026",
-        "Avances de OpenAI y el nuevo modelo GPT-5 en marzo 2026",
-        "Ciberseguridad: Gran filtración de datos en empresas de Europa hoy",
-        "Starlink y la nueva velocidad de internet satelital en Costa Rica",
-        "SpaceX: Lanzamiento exitoso de la Starship en marzo 2026",
-        "Apple anuncia nuevas gafas Vision Pro 2: Características reales",
-        "Descubrimiento científico en computación cuántica esta semana"
+    # Fuentes de temas de alta relevancia en marzo 2026
+    temas_reales = [
+        "Nuevas GPUs NVIDIA RTX 50 'Blackwell' y GDDR7",
+        "Lanzamiento de procesadores AMD Ryzen serie 9000 con arquitectura Zen 6",
+        "Actualizaciones de OpenAI: GPT-5 y Sora para el público general",
+        "Ciberseguridad: Nueva vulnerabilidad en procesadores Intel Nova Lake",
+        "SpaceX: Progreso de la Starship y misiones a la Luna en 2026",
+        "Apple Vision Pro 2: Mejoras en micro-OLED y peso",
+        "Avances en Redes: Starlink Mini y cobertura global en Costa Rica"
     ]
     
-    tema_hoy = random.choice(fuentes_reales)
+    seleccion = random.choice(temas_reales)
     
-    # PROMPT AGRESIVO PARA EVITAR REPETICIONES
+    # EL PROMPT DE ALTA PRECISIÓN (Evita inventar datos)
     prompt = f"""
-    Eres un periodista de tecnología internacional. Hoy es {datetime.now().strftime('%d de marzo de 2026')}.
-    Tu misión es redactar una noticia REAL y SERIA sobre: {tema_hoy}.
+    Eres un analista senior de 'Digital Foundry' y 'The Verge'. 
+    Hoy es {datetime.now().strftime('%d de marzo de 2026')}.
+    Redacta una noticia técnica REAL y TRANSPARENTE sobre: {seleccion}.
 
-    REGLAS CRÍTICAS:
-    1. PROHIBIDO hablar de Godot Engine. Si lo mencionas, el artículo será rechazado.
-    2. La primera línea es el TITULAR (Sin #, sin negritas, máximo 12 palabras).
-    3. Mínimo 800 palabras. Usa datos técnicos, nombres de CEOs y fechas de marzo 2026.
-    4. Usa Markdown (H2 para subtítulos).
-    5. No inventes, actúa como si estuvieras leyendo la noticia en Reuters o The Verge.
+    REGLAS DE ORO PARA EVITAR ALUCINACIONES:
+    1. PROHIBIDO INVENTAR NÚMEROS: Si no existe un dato oficial de núcleos o frecuencia, di 'según filtraciones de fuentes de la industria' o 'se estima un aumento porcentual'.
+    2. CONTEXTO 2026: Usa tecnologías de este año (PCIe 5.0/6.0, DDR5/6, Wi-Fi 7). 
+    3. TERMINOLOGÍA REAL: Si hablas de NVIDIA usa 'Blackwell', si es AMD usa 'Zen 6', si es Intel usa 'Nova Lake'.
+    4. TRANSPARENCIA: Si la noticia es un rumor fuerte, indícalo claramente al lector.
+    5. ESTRUCTURA: Primera línea = TÍTULO profesional. Resto = Markdown con H2 (mínimo 800 palabras).
     """
     
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.4 # Muy bajo para que no se ponga "creativo" e invente cosas
+        "temperature": 0.3 # Temperatura muy baja para máxima fidelidad a los hechos
     }
     
-    print(f"📡 Generando noticia REAL sobre: {tema_hoy}...")
+    print(f"🕵️ Investigando y redactando noticia real sobre: {seleccion}...")
     response = requests.post(URL_GROQ, headers=headers, json=data)
     if response.status_code != 200: return None
     return response.json()['choices'][0]['message']['content']
 
-raw_text = generar_noticia_variada_real()
+raw_text = generar_noticia_real_pro()
 
 if raw_text:
     lineas = raw_text.split('\n')
-    titulo_final = lineas[0].strip().replace('"', '').replace('#', '')
-    cuerpo_final = "\n".join(lineas[1:])
+    titulo_noticia = lineas[0].strip().replace('"', '').replace('#', '')
+    cuerpo_noticia = "\n".join(lineas[1:])
 
     folder = "src/pages/herramientas"
     os.makedirs(folder, exist_ok=True)
     
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    file_path = os.path.join(folder, f"tech-news-{timestamp}.md")
+    file_path = os.path.join(folder, f"real-news-{timestamp}.md")
     
-    # El frontmatter ahora es dinámico y limpio
     final_content = f"""---
 layout: ../../layouts/Layout.astro
-title: "{titulo_final}"
+title: "{titulo_noticia}"
 fecha: "{datetime.now().strftime('%d/%m/%Y')}"
 ---
 
-{cuerpo_final}
+{cuerpo_noticia}
 """
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(final_content)
-    print(f"✅ Noticia publicada con éxito: {titulo_final}")
+    print(f"✅ Noticia real publicada: {titulo_noticia}")
