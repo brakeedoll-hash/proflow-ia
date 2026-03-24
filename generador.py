@@ -16,35 +16,52 @@ def generar_contenido_ia():
         "Content-Type": "application/json"
     }
     
-    # He corregido el espacio aquí abajo:
+    # PROMPT ESTRATÉGICO PARA INGRESOS PASIVOS
+    prompt = """
+    Actúa como un experto en SEO y Marketing Digital. 
+    Escribe un artículo de blog optimizado para Google sobre una herramienta de IA (software de productividad, plugin de Godot, o herramienta de código).
+    
+    Estructura obligatoria en Markdown:
+    1. Título llamativo (H1) que incluya palabras como 'Mejor', 'Gratis' o '2026'.
+    2. Introducción que ataque un problema real de un programador o desarrollador.
+    3. Lista de 3 beneficios clave (con viñetas).
+    4. Una sección titulada '¿Por qué deberías probarlo hoy?'.
+    5. Un llamado a la acción (CTA) profesional.
+    
+    REGLAS: No digas que eres una IA. Usa un tono emocionante y profesional. 
+    Si la herramienta tiene versión de pago, menciónala como una inversión.
+    """
+    
     data = {
         "model": "llama-3.3-70b-versatile",
-        "messages": [{"role": "user", "content": "Escribe un artículo corto en Markdown sobre una herramienta de IA útil para programadores o para desarrollo de juegos en Godot."}]
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7
     }
     
-    print("🤖 Intentando conectar con Groq...")
+    print("🤖 Generando contenido optimizado para SEO...")
     response = requests.post(URL_GROQ, headers=headers, json=data)
     
     if response.status_code != 200:
-        print(f"❌ Error de Groq (Status {response.status_code}):")
-        print(response.text)
+        print(f"❌ Error de Groq: {response.status_code}")
         return None
         
     res_json = response.json()
     return res_json['choices'][0]['message']['content']
 
-# 2. Lógica principal
+# 2. Lógica de guardado
 texto = generar_contenido_ia()
 
 if texto:
     folder = "src/pages/herramientas"
     os.makedirs(folder, exist_ok=True)
+    
+    # Nombre de archivo basado en fecha para evitar duplicados
     date_str = datetime.now().strftime("%Y-%m-%d-%H%M")
-    file_path = os.path.join(folder, f"ia-news-{date_str}.md")
+    file_path = os.path.join(folder, f"ia-expert-{date_str}.md")
     
     final_content = f"""---
 layout: ../../layouts/Layout.astro
-title: "IA Update {datetime.now().strftime('%d/%m/%Y')}"
+title: "Recomendación IA {datetime.now().strftime('%d/%m/%Y')}"
 fecha: "{datetime.now().strftime('%d/%m/%Y')}"
 ---
 
@@ -52,28 +69,7 @@ fecha: "{datetime.now().strftime('%d/%m/%Y')}"
 """
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(final_content)
-    print(f"✅ ¡Artículo creado!: {file_path}")
+    print(f"✅ ¡Artículo de marketing creado!: {file_path}")
 else:
-    print("⚠️ No se pudo generar el artículo.")
+    print("⚠️ Falló la generación de contenido.")
     exit(1)
-
-# Prompt enfocado en SEO y Conversión
-    prompt = """
-    Actúa como un experto en SEO y Marketing Digital. 
-    Escribe un artículo de blog optimizado para Google sobre una herramienta de IA (software, plugin de Godot, o app productiva).
-    
-    Estructura obligatoria:
-    1. Título llamativo con la palabra 'Mejor' o 'Gratis'.
-    2. Introducción que ataque un problema del programador.
-    3. Lista de 3 beneficios clave.
-    4. Una sección de 'Por qué deberías usarlo hoy'.
-    5. Un llamado a la acción (CTA) invitando a probar herramientas similares.
-    
-    IMPORTANTE: Usa un lenguaje sencillo pero profesional. No menciones que eres una IA.
-    """
-    
-    data = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.7 # Esto le da un toque más creativo y menos robótico
-    }
