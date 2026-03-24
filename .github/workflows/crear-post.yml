@@ -1,0 +1,27 @@
+name: Bot Redactor de ProFlow IA
+
+on:
+  workflow_dispatch: # Esto crea un botón para ejecutarlo manualmente
+
+jobs:
+  escribir-y-publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Ejecutar el Script Redactor
+        run: python generador.py
+
+      - name: Guardar y Subir a GitHub
+        run: |
+          git config --global user.name "ProFlow Automático"
+          git config --global user.email "bot@proflow-ia.com"
+          git add src/pages/herramientas/*.md
+          git commit -m "🤖 Nuevo artículo de IA publicado" || exit 0
+          git push
