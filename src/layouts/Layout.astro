@@ -1,0 +1,28 @@
+---
+const { frontmatter } = Astro.props;
+---
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>{frontmatter.title} | ProFlow IA</title>
+    <meta name="viewport" content="width=device-width" />
+    <style>
+      body { background: #020617; color: #f8fafc; font-family: system-ui, sans-serif; line-height: 1.6; margin: 0; }
+      nav { background: #0f172a; padding: 1rem; border-bottom: 1px solid #1e293b; text-align: center; }
+      nav a { color: #38bdf8; text-decoration: none; font-weight: bold; margin: 0 15px; }
+      article { max-width: 800px; margin: 40px auto; padding: 20px; background: #0f172a; border-radius: 12px; border: 1px solid #1e293b; }
+      h1 { color: #38bdf8; font-size: 2.5rem; }
+      footer { text-align: center; padding: 40px; opacity: 0.5; font-size: 0.8rem; }
+      code { background: #1e293b; padding: 2px 5px; border-radius: 4px; color: #f472b6; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/">🏠 Inicio</a>
+      <a href="/herramientas">🛠️ Herramientas</a>
+    </nav>
+    <article>
+      <slot /> </article>
+    <footer>© 2026 ProFlow IA - Generado Automáticamente</footer>
+  </body>
+</html>
