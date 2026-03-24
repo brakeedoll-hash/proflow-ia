@@ -12,7 +12,7 @@ file_path = os.path.join(folder, file_name)
 
 # 3. El contenido del artículo (Aquí luego conectaremos la IA real)
 content = f"""---
-layout: ../../src/layouts/Layout.astro
+layout: ../../layouts/Layout.astro
 title: "Auto-Generador de Código para Godot - {date_str}"
 fecha: "{date_str}"
 ---
