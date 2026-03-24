@@ -1,35 +1,65 @@
 ---
-// Asegúrate de que la ruta sea esta:
-const posts = await Astro.glob('./herramientas/*.md');
+// 1. Lógica anti-errores para el Build de Vercel
+let posts = [];
+try {
+  // Buscamos las noticias en la carpeta herramientas
+  posts = await Astro.glob('./herramientas/*.md');
+  
+  // Ordenamos para que la más reciente salga primero
+  posts.sort((a, b) => {
+    const dateA = new Date(a.frontmatter.fecha.split('/').reverse().join('-'));
+    const dateB = new Date(b.frontmatter.fecha.split('/').reverse().join('-'));
+    return dateB - dateA;
+  });
+} catch (e) {
+  // Si no hay archivos, dejamos la lista vacía y evitamos el error AstroGlobNoMatch
+  posts = [];
+}
 ---
----
+
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <title>ProFlow IA | El Directorio Automático</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-      body { background: #020617; color: white; font-family: sans-serif; padding: 40px; }
-      .container { max-width: 900px; margin: 0 auto; }
-      h1 { color: #38bdf8; text-align: center; margin-bottom: 40px; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-      .card { background: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; text-decoration: none; color: white; transition: 0.3s; }
-      .card:hover { border-color: #38bdf8; transform: translateY(-5px); }
-      .card h2 { margin-top: 0; color: #38bdf8; font-size: 1.2rem; }
-      .badge { background: #1e293b; font-size: 0.7rem; padding: 4px 10px; border-radius: 10px; display: inline-block; margin-bottom: 10px; color: #94a3b8; }
+      body { background: #020617; color: white; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; margin: 0; }
+      .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+      h1 { color: #38bdf8; text-align: center; margin-bottom: 10px; font-size: 2.5rem; }
+      p.subtitle { text-align: center; color: #64748b; margin-bottom: 50px; }
+      
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+      .card { background: #0f172a; padding: 25px; border-radius: 16px; border: 1px solid #1e293b; text-decoration: none; color: white; transition: all 0.3s ease; display: flex; flex-direction: column; }
+      .card:hover { border-color: #38bdf8; transform: translateY(-8px); box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); }
+      
+      .card h2 { margin: 10px 0; color: #38bdf8; font-size: 1.4rem; line-height: 1.2; flex-grow: 1; }
+      .badge { background: #0ea5e9; font-size: 0.7rem; padding: 4px 12px; border-radius: 50px; font-weight: bold; color: #020617; width: fit-content; }
+      .date { color: #64748b; font-size: 0.85rem; margin-top: 15px; border-top: 1px solid #1e293b; padding-top: 10px; }
+      
+      .empty-state { text-align: center; padding: 60px; background: #0f172a; border-radius: 20px; border: 1px dashed #334155; }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>🚀 ProFlow IA: Directorio Automático</h1>
-      <div class="grid">
-        {posts.map(post => (
-          <a href={post.url} class="card">
-            <span class="badge">Nuevo! ⚡</span>
-            <h2>{post.frontmatter.title}</h2>
-            <p>Fecha: {post.frontmatter.fecha}</p>
-          </a>
-        ))}
-      </div>
+      <h1>🚀 ProFlow IA</h1>
+      <p class="subtitle">Noticias reales de tecnología generadas por Inteligencia Artificial</p>
+
+      {posts.length > 0 ? (
+        <div class="grid">
+          {posts.map(post => (
+            <a href={post.url} class="card">
+              <span class="badge">ACTUALIDAD ⚡</span>
+              <h2>{post.frontmatter.title}</h2>
+              <div class="date">📅 {post.frontmatter.fecha}</div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <h2 style="color: #94a3b8;">📡 El bot está investigando...</h2>
+          <p style="color: #64748b;">Pronto aparecerán aquí las noticias reales más recientes de marzo 2026.</p>
+        </div>
+      )}
     </div>
   </body>
 </html>
