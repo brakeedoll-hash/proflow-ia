@@ -56,3 +56,24 @@ fecha: "{datetime.now().strftime('%d/%m/%Y')}"
 else:
     print("⚠️ No se pudo generar el artículo.")
     exit(1)
+
+# Prompt enfocado en SEO y Conversión
+    prompt = """
+    Actúa como un experto en SEO y Marketing Digital. 
+    Escribe un artículo de blog optimizado para Google sobre una herramienta de IA (software, plugin de Godot, o app productiva).
+    
+    Estructura obligatoria:
+    1. Título llamativo con la palabra 'Mejor' o 'Gratis'.
+    2. Introducción que ataque un problema del programador.
+    3. Lista de 3 beneficios clave.
+    4. Una sección de 'Por qué deberías usarlo hoy'.
+    5. Un llamado a la acción (CTA) invitando a probar herramientas similares.
+    
+    IMPORTANTE: Usa un lenguaje sencillo pero profesional. No menciones que eres una IA.
+    """
+    
+    data = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7 # Esto le da un toque más creativo y menos robótico
+    }
