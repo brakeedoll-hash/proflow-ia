@@ -1,7 +1,9 @@
 name: Bot Redactor de ProFlow IA
 
 on:
-  workflow_dispatch: # Esto permite ejecutarlo manualmente con el botón
+  workflow_dispatch: # Mantiene el botón manual
+  schedule:
+    - cron: '0 14 * * 1' # Esto corre todos los lunes a las 8:00 AM hora de Costa Rica
 
 jobs:
   escribir-y-publicar:
