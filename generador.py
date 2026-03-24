@@ -16,15 +16,15 @@ def generar_contenido_ia():
         "Content-Type": "application/json"
     }
     
+    # He corregido el espacio aquí abajo:
     data = {
-        "model": "llama3-8b-8192",
-        "messages": [{"role": "user", "content": "Escribe un artículo corto en Markdown sobre una herramienta de IA útil para programadores."}]
+        "model": "llama-3.3-70b-versatile",
+        "messages": [{"role": "user", "content": "Escribe un artículo corto en Markdown sobre una herramienta de IA útil para programadores o para desarrollo de juegos en Godot."}]
     }
     
     print("🤖 Intentando conectar con Groq...")
     response = requests.post(URL_GROQ, headers=headers, json=data)
     
-    # Imprimimos la respuesta si falla para saber qué dice Groq
     if response.status_code != 200:
         print(f"❌ Error de Groq (Status {response.status_code}):")
         print(response.text)
