@@ -1,19 +1,21 @@
 ---
-// 1. Lógica anti-errores para el Build de Vercel
+// Lógica ultra-segura para leer noticias sin errores en el Build
 let posts = [];
 try {
-  // Buscamos las noticias en la carpeta herramientas
-  posts = await Astro.glob('./herramientas/*.md');
+  // import.meta.glob es más resistente que Astro.glob en Vercel
+  const allPosts = import.meta.glob('./herramientas/*.md', { eager: true });
+  posts = Object.values(allPosts);
   
-  // Ordenamos para que la más reciente salga primero
-  posts.sort((a, b) => {
-    const dateA = new Date(a.frontmatter.fecha.split('/').reverse().join('-'));
-    const dateB = new Date(b.frontmatter.fecha.split('/').reverse().join('-'));
-    return dateB - dateA;
-  });
+  // Ordenar por fecha si hay noticias
+  if (posts.length > 0) {
+    posts.sort((a, b) => {
+      const dateA = new Date(a.frontmatter.fecha.split('/').reverse().join('-'));
+      const dateB = new Date(b.frontmatter.fecha.split('/').reverse().join('-'));
+      return dateB - dateA;
+    });
+  }
 } catch (e) {
-  // Si no hay archivos, dejamos la lista vacía y evitamos el error AstroGlobNoMatch
-  posts = [];
+  posts = []; // Si falla, la página carga vacía pero NO se rompe
 }
 ---
 
@@ -42,7 +44,7 @@ try {
   <body>
     <div class="container">
       <h1>🚀 ProFlow IA</h1>
-      <p class="subtitle">Noticias reales de tecnología generadas por Inteligencia Artificial</p>
+      <p class="subtitle">Noticias reales de tecnología generadas por IA</p>
 
       {posts.length > 0 ? (
         <div class="grid">
