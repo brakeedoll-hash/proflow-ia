@@ -12,8 +12,10 @@ const { frontmatter } = Astro.props;
       nav a { color: #38bdf8; text-decoration: none; font-weight: bold; margin: 0 15px; }
       article { max-width: 800px; margin: 40px auto; padding: 20px; background: #0f172a; border-radius: 12px; border: 1px solid #1e293b; }
       h1 { color: #38bdf8; font-size: 2.5rem; }
-      footer { text-align: center; padding: 40px; opacity: 0.5; font-size: 0.8rem; }
-      code { background: #1e293b; padding: 2px 5px; border-radius: 4px; color: #f472b6; }
+      <footer class="mt-10 py-6 border-t border-gray-800 text-center text-gray-500 text-sm">
+  <p>© 2026 ProFlow IA - Anthony Loaiza. Todos los derechos reservados.</p>
+  <p class="px-4">Nota: Algunos enlaces en este sitio pueden ser de afiliados, lo que nos ayuda a mantener el bot funcionando sin costo para ti.</p>
+</footer>
     </style>
   </head>
   <body>
@@ -22,7 +24,3 @@ const { frontmatter } = Astro.props;
       <a href="/herramientas">🛠️ Herramientas</a>
     </nav>
     <article>
-      <slot /> </article>
-    <footer>© 2026 ProFlow IA - Generado Automáticamente</footer>
-  </body>
-</html>
