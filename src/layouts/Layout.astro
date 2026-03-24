@@ -13,12 +13,12 @@ const { frontmatter } = Astro.props;
      crossorigin="anonymous"></script>
 
     <style>
-      body { background: #020617; color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.8; margin: 0; }
+      body { background: #020617; color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.8; margin: 0; overflow-x: hidden; }
       nav { background: #0f172a; padding: 1.2rem; border-bottom: 1px solid #1e293b; text-align: center; position: sticky; top: 0; z-index: 100; }
       nav a { color: #38bdf8; text-decoration: none; font-weight: bold; margin: 0 12px; font-size: 0.9rem; transition: 0.3s; }
       nav a:hover { color: #7dd3fc; text-shadow: 0 0 8px #38bdf8; }
       
-      article { max-width: 850px; margin: 40px auto; padding: 40px; background: #0f172a; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+      article { max-width: 850px; margin: 40px auto; padding: 40px; background: #0f172a; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 10px 40px rgba(0,0,0,0.6); min-height: 60vh; }
       h1 { color: #38bdf8; font-size: 2.8rem; margin-bottom: 1rem; line-height: 1.1; }
       h2 { color: #7dd3fc; margin-top: 2.5rem; border-left: 4px solid #38bdf8; padding-left: 15px; font-size: 1.8rem; }
       p { margin-bottom: 1.5rem; font-size: 1.1rem; color: #cbd5e1; }
@@ -27,6 +27,25 @@ const { frontmatter } = Astro.props;
       .legal-links { margin-top: 20px; }
       .legal-links a { color: #475569; text-decoration: none; margin: 0 10px; font-size: 0.85rem; }
       .legal-links a:hover { color: #38bdf8; }
+
+      /* --- ESTILOS DEL CHAT IA (MODERNO) --- */
+      #chat-container { position: fixed; bottom: 85px; right: 20px; width: 350px; height: 450px; background: #0f172a; border: 1px solid #38bdf8; border-radius: 16px; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 15px 50px rgba(0,0,0,0.8); overflow: hidden; animation: fadeInUp 0.3s ease-out; }
+      @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      
+      #chat-header { background: linear-gradient(90deg, #38bdf8, #818cf8); color: #020617; padding: 12px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+      #chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; background: #020617; }
+      
+      .msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
+      .user-msg { background: #38bdf8; color: #020617; align-self: flex-end; border-bottom-right-radius: 2px; }
+      .bot-msg { background: #1e293b; color: #f8fafc; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #334155; }
+      
+      #chat-input-area { padding: 15px; background: #0f172a; display: flex; gap: 8px; border-top: 1px solid #1e293b; }
+      #chat-input-area input { flex: 1; background: #020617; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; outline: none; }
+      #chat-input-area button { background: #38bdf8; border: none; color: #020617; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+      #chat-input-area button:hover { background: #7dd3fc; }
+      
+      #chat-toggle { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #38bdf8, #818cf8); color: white; border: none; padding: 14px 24px; border-radius: 50px; cursor: pointer; z-index: 1001; font-weight: bold; box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3); transition: 0.3s; }
+      #chat-toggle:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(56, 189, 248, 0.5); }
     </style>
   </head>
   <body>
@@ -41,9 +60,72 @@ const { frontmatter } = Astro.props;
     <article>
       {frontmatter.title && <h1>{frontmatter.title}</h1>}
       {frontmatter.fecha && <p style="color: #64748b; font-size: 0.9rem;">Escrito por Anthonny Loaiza • {frontmatter.fecha}</p>}
-      
       <slot /> 
     </article>
+
+    <button id="chat-toggle" onclick="toggleChat()">
+      🤖 Chat con IA Pro
+    </button>
+
+    <div id="chat-container">
+      <div id="chat-header">
+        <span>ProFlow IA Assistant</span>
+        <button onclick="toggleChat()" style="background:none; border:none; cursor:pointer; color: #020617; font-size: 1.2rem;">✕</button>
+      </div>
+      <div id="chat-messages">
+        <div class="msg bot-msg">¡Hola Anthonny! Soy la IA oficial de ProFlow. ¿Qué quieres saber sobre hardware o IA hoy?</div>
+      </div>
+      <div id="chat-input-area">
+        <input type="text" id="user-input" placeholder="Escribe tu duda..." onkeypress="if(event.key === 'Enter') handleSend()" />
+        <button onclick="handleSend()">Enviar</button>
+      </div>
+    </div>
+
+    <script is:inline>
+      function toggleChat() {
+        const chat = document.getElementById('chat-container');
+        chat.style.display = (chat.style.display === 'flex') ? 'none' : 'flex';
+      }
+
+      async function handleSend() {
+        const input = document.getElementById('user-input');
+        const box = document.getElementById('chat-messages');
+        const text = input.value.trim();
+        
+        if (!text) return;
+
+        // 1. Agregar mensaje del usuario al chat
+        const uDiv = document.createElement('div');
+        uDiv.className = 'msg user-msg';
+        uDiv.innerText = text;
+        box.appendChild(uDiv);
+        input.value = "";
+        box.scrollTop = box.scrollHeight;
+
+        // 2. Agregar mensaje de "Pensando..."
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'msg bot-msg';
+        loadingDiv.innerText = "Escribiendo...";
+        box.appendChild(loadingDiv);
+        box.scrollTop = box.scrollHeight;
+
+        try {
+          // 3. LLAMADA REAL A TU API
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mensaje: text })
+          });
+          
+          const data = await response.json();
+          loadingDiv.innerText = data.respuesta;
+        } catch (error) {
+          loadingDiv.innerText = "Lo siento, Anthonny. Hubo un error al conectar con Groq. Revisa tu variable de entorno en Vercel.";
+        }
+        
+        box.scrollTop = box.scrollHeight;
+      }
+    </script>
 
     <footer>
       <p>© 2026 ProFlow IA - Anthonny Jesus Loaiza Acevedo</p>
