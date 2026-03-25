@@ -1,12 +1,12 @@
 ---
-// Lógica ultra-segura para leer noticias sin errores en el Build
+// Lógica corregida para encontrar las noticias en la carpeta herramientas
 let posts = [];
 try {
-  // import.meta.glob es más resistente que Astro.glob en Vercel
+  // Buscamos los archivos .md dentro de la carpeta herramientas
   const allPosts = import.meta.glob('./herramientas/*.md', { eager: true });
   posts = Object.values(allPosts);
   
-  // Ordenar por fecha si hay noticias
+  // Ordenar por fecha (más reciente primero)
   if (posts.length > 0) {
     posts.sort((a, b) => {
       const dateA = new Date(a.frontmatter.fecha.split('/').reverse().join('-'));
@@ -15,7 +15,8 @@ try {
     });
   }
 } catch (e) {
-  posts = []; // Si falla, la página carga vacía pero NO se rompe
+  console.error("Error cargando noticias:", e);
+  posts = []; 
 }
 ---
 
@@ -31,25 +32,14 @@ try {
       p.subtitle { text-align: center; color: #64748b; margin-bottom: 50px; }
       
       .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-      .card { background: #0f172a; padding: 25px; border-radius: 16px; border: 1px solid #1e293b; text-decoration: none; color: white; transition: all 0.3s ease; display: flex; flex-direction: column; }
+      .card { background: #0f172a; padding: 25px; border-radius: 16px; border: 1px solid #1e293b; text-decoration: none; color: white; transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
       .card:hover { border-color: #38bdf8; transform: translateY(-8px); box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); }
       
-      .card h2 { margin: 10px 0; color: #38bdf8; font-size: 1.4rem; line-height: 1.2; flex-grow: 1; }
-      .badge { background: #0ea5e9; font-size: 0.7rem; padding: 4px 12px; border-radius: 50px; font-weight: bold; color: #020617; width: fit-content; }
-      .date { color: #64748b; font-size: 0.85rem; margin-top: 15px; border-top: 1px solid #1e293b; padding-top: 10px; }
+      .card h2 { margin: 15px 0; color: #38bdf8; font-size: 1.4rem; line-height: 1.2; flex-grow: 1; }
+      .badge { background: #0ea5e9; font-size: 0.7rem; padding: 4px 12px; border-radius: 50px; font-weight: bold; color: #020617; width: fit-content; text-transform: uppercase; }
+      .date { color: #64748b; font-size: 0.85rem; margin-top: auto; border-top: 1px solid #1e293b; padding-top: 10px; display: flex; align-items: center; gap: 5px; }
       
-      .empty-state { text-align: center; padding: 60px; background: #0f172a; border-radius: 20px; border: 1px dashed #334155; }
-
-      /* --- ESTILOS DEL NUEVO CHAT V2 --- */
-      #chat-container { position: fixed; bottom: 20px; right: 20px; width: 350px; background: #0f172a; border: 1px solid #1e293b; border-radius: 15px; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 1000; }
-      #chat-header { background: #1e293b; padding: 12px; border-radius: 15px 15px 0 0; color: #38bdf8; font-weight: bold; border-bottom: 1px solid #334155; }
-      #chat-messages { height: 300px; overflow-y: auto; padding: 15px; font-size: 0.9rem; display: flex; flex-direction: column; gap: 10px; }
-      .msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; }
-      .user-msg { background: #38bdf8; color: #020617; align-self: flex-end; }
-      .bot-msg { background: #1e293b; color: white; align-self: flex-start; }
-      #chat-input-area { display: flex; padding: 10px; border-top: 1px solid #1e293b; gap: 5px; }
-      #chat-input { flex-grow: 1; background: #020617; border: 1px solid #334155; color: white; padding: 8px; border-radius: 8px; outline: none; }
-      #send-btn { background: #38bdf8; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; color: #020617; font-weight: bold; }
+      .empty-state { text-align: center; padding: 80px; background: #0f172a; border-radius: 20px; border: 1px dashed #334155; margin-top: 20px; }
     </style>
   </head>
   <body>
@@ -70,59 +60,9 @@ try {
       ) : (
         <div class="empty-state">
           <h2 style="color: #94a3b8;">📡 El bot está investigando...</h2>
-          <p style="color: #64748b;">Pronto aparecerán aquí las noticias reales más recientes de marzo 2026.</p>
+          <p style="color: #64748b;">No se encontraron archivos en src/pages/herramientas/</p>
         </div>
       )}
     </div>
-
-    <div id="chat-container">
-      <div id="chat-header">🤖 ProFlow Assistant</div>
-      <div id="chat-messages">
-        <div class="msg bot-msg">¡Hola Anthony! ¿Qué quieres saber sobre hardware hoy?</div>
-      </div>
-      <div id="chat-input-area">
-        <input type="text" id="chat-input" placeholder="Escribe aquí..." />
-        <button id="send-btn">Enviar</button>
-      </div>
-    </div>
-
-    <script>
-      const input = document.getElementById('chat-input');
-      const btn = document.getElementById('send-btn');
-      const messagesContainer = document.getElementById('chat-messages');
-
-      async function sendMessage() {
-        const text = input.value.trim();
-        if (!text) return;
-
-        // Mostrar mensaje del usuario
-        messagesContainer.innerHTML += `<div class="msg user-msg">${text}</div>`;
-        input.value = '';
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-        try {
-          // LLAMADA A LA NUEVA API V2
-          const response = await fetch('/api/v2-chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text }) // Usamos "message" como en tu v2-chat.js
-          });
-
-          const data = await response.json();
-          
-          if (data.response) {
-            messagesContainer.innerHTML += `<div class="msg bot-msg">${data.response}</div>`;
-          } else {
-            messagesContainer.innerHTML += `<div class="msg bot-msg" style="color: #f87171;">Error: ${data.error || 'Algo salió mal'}</div>`;
-          }
-        } catch (e) {
-          messagesContainer.innerHTML += `<div class="msg bot-msg" style="color: #f87171;">Error de conexión.</div>`;
-        }
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      }
-
-      btn.addEventListener('click', sendMessage);
-      input.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-    </script>
   </body>
 </html>
