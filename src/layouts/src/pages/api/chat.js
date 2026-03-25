@@ -1,39 +1,19 @@
 import Groq from "groq-sdk";
 
-// Esta línea busca la llave de forma segura en el servidor de Vercel
-const apiKey = process.env.GROQ_API_KEY || import.meta.env.GROQ_API_KEY;
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-const groq = new Groq({ apiKey: apiKey });
-
-export async function POST({ request }) {
-  if (!apiKey) {
-    return new Response(JSON.stringify({ 
-      respuesta: "Error: Configuración de seguridad pendiente en el servidor." 
-    }), { status: 500 });
-  }
-
+export const POST = async ({ request }) => {
   try {
-    const { mensaje } = await request.json();
-
-    const chatCompletion = await groq.chat.completions.create({
+    const { message } = await request.json();
+    const completion = await groq.chat.completions.create({
       messages: [
-        { role: "system", content: "Eres la IA de ProFlow. Responde de forma técnica y real sobre hardware e IA." },
-        { role: "user", content: mensaje }
+        { role: "system", content: "Eres ProFlow AI. Responde técnico y breve con emojis de hardware." },
+        { role: "user", content: message }
       ],
       model: "llama3-8b-8192",
-      temperature: 0.6,
     });
-
-    return new Response(JSON.stringify({
-      respuesta: chatCompletion.choices[0].message.content
-    }), { 
-      status: 200,
-      headers: { "Content-Type": "application/json" }
-    });
-
-  } catch (error) {
-    return new Response(JSON.stringify({ 
-      respuesta: "La IA está procesando mucha información. Intenta de nuevo en un momento." 
-    }), { status: 500 });
+    return new Response(JSON.stringify({ response: completion.choices[0].message.content }), { status: 200 });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: "Error de conexión con el núcleo." }), { status: 500 });
   }
-}
+};
