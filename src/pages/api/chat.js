@@ -1,21 +1,27 @@
-import Groq from "groq-sdk";
-
-const groq = new Groq({ 
-  apiKey: process.env.GROQ_API_KEY 
-});
-
 export const POST = async ({ request }) => {
   try {
     const { message } = await request.json();
-    const completion = await groq.chat.completions.create({
-      messages: [
-        { role: "system", content: "Eres ProFlow AI, asistente de hardware. Responde breve y técnico con emojis." },
-        { role: "user", content: message },
-      ],
-      model: "llama3-8b-8192",
+    const API_KEY = process.env.GEMINI_API_KEY;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: `Eres ProFlow AI, un asistente técnico experto en hardware y redes. Responde breve y con emojis tech. Pregunta: ${message}` }]
+        }]
+      })
     });
-    return new Response(JSON.stringify({ response: completion.choices[0].message.content }), { status: 200 });
+
+    const data = await response.json();
+    const aiResponse = data.candidates[0].content.parts[0].text;
+
+    return new Response(JSON.stringify({ response: aiResponse }), { 
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Error de conexión." }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Núcleo Gemini fuera de línea." }), { status: 500 });
   }
 };
