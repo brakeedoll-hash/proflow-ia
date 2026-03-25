@@ -1,139 +1,67 @@
 ---
-const { frontmatter } = Astro.props;
+// Lógica ultra-segura para leer noticias sin errores en el Build
+let posts = [];
+try {
+  // import.meta.glob es más resistente que Astro.glob en Vercel
+  const allPosts = import.meta.glob('./herramientas/*.md', { eager: true });
+  posts = Object.values(allPosts);
+  
+  // Ordenar por fecha si hay noticias
+  if (posts.length > 0) {
+    posts.sort((a, b) => {
+      const dateA = new Date(a.frontmatter.fecha.split('/').reverse().join('-'));
+      const dateB = new Date(b.frontmatter.fecha.split('/').reverse().join('-'));
+      return dateB - dateA;
+    });
+  }
+} catch (e) {
+  posts = []; // Si falla, la página carga vacía pero NO se rompe
+}
 ---
+
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>{frontmatter.title} | ProFlow IA</title>
+    <title>ProFlow IA | El Directorio Automático</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <meta name="google-site-verification" content="h1oy-oeHSA1BHNTUdIIvOAZJxvlCu_7IlSeSuwPeApo" />
-
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3264827855402794"
-     crossorigin="anonymous"></script>
-
     <style>
-      body { background: #020617; color: #f8fafc; font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.8; margin: 0; overflow-x: hidden; }
-      nav { background: #0f172a; padding: 1.2rem; border-bottom: 1px solid #1e293b; text-align: center; position: sticky; top: 0; z-index: 100; }
-      nav a { color: #38bdf8; text-decoration: none; font-weight: bold; margin: 0 12px; font-size: 0.9rem; transition: 0.3s; }
-      nav a:hover { color: #7dd3fc; text-shadow: 0 0 8px #38bdf8; }
+      body { background: #020617; color: white; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; margin: 0; }
+      .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+      h1 { color: #38bdf8; text-align: center; margin-bottom: 10px; font-size: 2.5rem; }
+      p.subtitle { text-align: center; color: #64748b; margin-bottom: 50px; }
       
-      article { max-width: 850px; margin: 40px auto; padding: 40px; background: #0f172a; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 10px 40px rgba(0,0,0,0.6); min-height: 60vh; }
-      h1 { color: #38bdf8; font-size: 2.8rem; margin-bottom: 1rem; line-height: 1.1; }
-      h2 { color: #7dd3fc; margin-top: 2.5rem; border-left: 4px solid #38bdf8; padding-left: 15px; font-size: 1.8rem; }
-      p { margin-bottom: 1.5rem; font-size: 1.1rem; color: #cbd5e1; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+      .card { background: #0f172a; padding: 25px; border-radius: 16px; border: 1px solid #1e293b; text-decoration: none; color: white; transition: all 0.3s ease; display: flex; flex-direction: column; }
+      .card:hover { border-color: #38bdf8; transform: translateY(-8px); box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); }
       
-      footer { margin-top: 60px; padding: 50px; border-top: 1px solid #1e293b; text-align: center; color: #64748b; background: #020617; }
-      .legal-links { margin-top: 20px; }
-      .legal-links a { color: #475569; text-decoration: none; margin: 0 10px; font-size: 0.85rem; }
-      .legal-links a:hover { color: #38bdf8; }
-
-      /* --- ESTILOS DEL CHAT IA (MODERNO) --- */
-      #chat-container { position: fixed; bottom: 85px; right: 20px; width: 350px; height: 450px; background: #0f172a; border: 1px solid #38bdf8; border-radius: 16px; display: none; flex-direction: column; z-index: 1000; box-shadow: 0 15px 50px rgba(0,0,0,0.8); overflow: hidden; animation: fadeInUp 0.3s ease-out; }
-      @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      .card h2 { margin: 10px 0; color: #38bdf8; font-size: 1.4rem; line-height: 1.2; flex-grow: 1; }
+      .badge { background: #0ea5e9; font-size: 0.7rem; padding: 4px 12px; border-radius: 50px; font-weight: bold; color: #020617; width: fit-content; }
+      .date { color: #64748b; font-size: 0.85rem; margin-top: 15px; border-top: 1px solid #1e293b; padding-top: 10px; }
       
-      #chat-header { background: linear-gradient(90deg, #38bdf8, #818cf8); color: #020617; padding: 12px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-      #chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; background: #020617; }
-      
-      .msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
-      .user-msg { background: #38bdf8; color: #020617; align-self: flex-end; border-bottom-right-radius: 2px; }
-      .bot-msg { background: #1e293b; color: #f8fafc; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #334155; }
-      
-      #chat-input-area { padding: 15px; background: #0f172a; display: flex; gap: 8px; border-top: 1px solid #1e293b; }
-      #chat-input-area input { flex: 1; background: #020617; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; outline: none; }
-      #chat-input-area button { background: #38bdf8; border: none; color: #020617; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-      #chat-input-area button:hover { background: #7dd3fc; }
-      
-      #chat-toggle { position: fixed; bottom: 20px; right: 20px; background: linear-gradient(135deg, #38bdf8, #818cf8); color: white; border: none; padding: 14px 24px; border-radius: 50px; cursor: pointer; z-index: 1001; font-weight: bold; box-shadow: 0 8px 20px rgba(56, 189, 248, 0.3); transition: 0.3s; }
-      #chat-toggle:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(56, 189, 248, 0.5); }
+      .empty-state { text-align: center; padding: 60px; background: #0f172a; border-radius: 20px; border: 1px dashed #334155; }
     </style>
   </head>
   <body>
-    <nav>
-      <a href="/">🏠 Inicio</a>
-      <a href="/herramientas">🛠️ IA Tools</a>
-      <a href="/nosotros">👨‍💻 Autor</a>
-      <a href="/contacto">📧 Contacto</a>
-      <a href="/privacidad">⚖️ Privacidad</a>
-    </nav>
+    <div class="container">
+      <h1>🚀 ProFlow IA</h1>
+      <p class="subtitle">Noticias reales de tecnología generadas por IA</p>
 
-    <article>
-      {frontmatter.title && <h1>{frontmatter.title}</h1>}
-      {frontmatter.fecha && <p style="color: #64748b; font-size: 0.9rem;">Escrito por Anthonny Loaiza • {frontmatter.fecha}</p>}
-      <slot /> 
-    </article>
-
-    <button id="chat-toggle" onclick="toggleChat()">
-      🤖 Chat con IA Pro
-    </button>
-
-    <div id="chat-container">
-      <div id="chat-header">
-        <span>ProFlow IA Assistant</span>
-        <button onclick="toggleChat()" style="background:none; border:none; cursor:pointer; color: #020617; font-size: 1.2rem;">✕</button>
-      </div>
-      <div id="chat-messages">
-        <div class="msg bot-msg">¡Hola Anthonny! Soy la IA oficial de ProFlow. ¿Qué quieres saber sobre hardware o IA hoy?</div>
-      </div>
-      <div id="chat-input-area">
-        <input type="text" id="user-input" placeholder="Escribe tu duda..." onkeypress="if(event.key === 'Enter') handleSend()" />
-        <button onclick="handleSend()">Enviar</button>
-      </div>
+      {posts.length > 0 ? (
+        <div class="grid">
+          {posts.map(post => (
+            <a href={post.url} class="card">
+              <span class="badge">ACTUALIDAD ⚡</span>
+              <h2>{post.frontmatter.title}</h2>
+              <div class="date">📅 {post.frontmatter.fecha}</div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <h2 style="color: #94a3b8;">📡 El bot está investigando...</h2>
+          <p style="color: #64748b;">Pronto aparecerán aquí las noticias reales más recientes de marzo 2026.</p>
+        </div>
+      )}
     </div>
-
-    <script is:inline>
-      function toggleChat() {
-        const chat = document.getElementById('chat-container');
-        chat.style.display = (chat.style.display === 'flex') ? 'none' : 'flex';
-      }
-
-      async function handleSend() {
-        const input = document.getElementById('user-input');
-        const box = document.getElementById('chat-messages');
-        const text = input.value.trim();
-        
-        if (!text) return;
-
-        // 1. Agregar mensaje del usuario al chat
-        const uDiv = document.createElement('div');
-        uDiv.className = 'msg user-msg';
-        uDiv.innerText = text;
-        box.appendChild(uDiv);
-        input.value = "";
-        box.scrollTop = box.scrollHeight;
-
-        // 2. Agregar mensaje de "Pensando..."
-        const loadingDiv = document.createElement('div');
-        loadingDiv.className = 'msg bot-msg';
-        loadingDiv.innerText = "Escribiendo...";
-        box.appendChild(loadingDiv);
-        box.scrollTop = box.scrollHeight;
-
-        try {
-          // 3. LLAMADA REAL A TU API
-          const response = await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mensaje: text })
-          });
-          
-          const data = await response.json();
-          loadingDiv.innerText = data.respuesta;
-        } catch (error) {
-          loadingDiv.innerText = "Lo siento, Anthonny. Hubo un error al conectar con Groq. Revisa tu variable de entorno en Vercel.";
-        }
-        
-        box.scrollTop = box.scrollHeight;
-      }
-    </script>
-
-    <footer>
-      <p>© 2026 ProFlow IA - Anthonny Jesus Loaiza Acevedo</p>
-      <div class="legal-links">
-        <a href="/privacidad">Privacidad</a> • 
-        <a href="/contacto">Contacto</a> • 
-        <a href="/nosotros">Sobre el Proyecto</a>
-      </div>
-    </footer>
   </body>
 </html>
