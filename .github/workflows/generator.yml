@@ -30,18 +30,28 @@ jobs:
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  contents: [{ parts: [{ text: 'Genera una noticia técnica de marzo 2026 sobre hardware en Costa Rica. Devuelve SOLO formato Markdown con frontmatter: --- title: "Titulo" fecha: "2026-03-25" layout: "../../layouts/Layout.astro" --- y contenido.' }] }]
+                  contents: [{ parts: [{ text: 'Genera una noticia técnica de marzo 2026 sobre hardware en Costa Rica. Devuelve SOLO formato Markdown con este frontmatter exacto: --- title: "Titulo Noticia" fecha: "2026-03-25" layout: "../../layouts/Layout.astro" --- y luego el contenido.' }] }]
                 })
               });
               
               const data = await resp.json();
+              
+              // Verificamos si la respuesta de la API es válida
+              if (!data.candidates || !data.candidates[0]) {
+                console.error('Error de Gemini:', JSON.stringify(data));
+                process.exit(1);
+              }
+
               const content = data.candidates[0].content.parts[0].text;
               
+              // Limpiamos posibles triple comillas que a veces pone Gemini
+              const cleanContent = content.replace(/```markdown/g, '').replace(/```/g, '');
+              
               const fileName = `src/pages/herramientas/noticia-${Date.now()}.md`;
-              fs.writeFileSync(fileName, content);
-              console.log('Noticia creada: ' + fileName);
+              fs.writeFileSync(fileName, cleanContent);
+              console.log('✅ Noticia creada con éxito: ' + fileName);
             } catch (err) {
-              console.error('Error:', err);
+              console.error('❌ Error Crítico:', err);
               process.exit(1);
             }
           }
@@ -54,5 +64,4 @@ jobs:
           git config --global user.name 'ProFlow-Bot'
           git config --global user.email 'bot@proflow.ia'
           git add .
-          # Solo hacer commit si hay archivos nuevos para evitar errores
-          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Bot: Nueva noticia detectada" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Bot: Nueva noticia de marzo 2026" && git push)
