@@ -1,67 +1,26 @@
 ---
-// Lógica ultra-segura para leer noticias sin errores en el Build
-let posts = [];
-try {
-  // import.meta.glob es más resistente que Astro.glob en Vercel
-  const allPosts = import.meta.glob('./herramientas/*.md', { eager: true });
-  posts = Object.values(allPosts);
-  
-  // Ordenar por fecha si hay noticias
-  if (posts.length > 0) {
-    posts.sort((a, b) => {
-      const dateA = new Date(a.frontmatter.fecha.split('/').reverse().join('-'));
-      const dateB = new Date(b.frontmatter.fecha.split('/').reverse().join('-'));
-      return dateB - dateA;
-    });
-  }
-} catch (e) {
-  posts = []; // Si falla, la página carga vacía pero NO se rompe
-}
+const { title } = Astro.props;
 ---
-
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <title>ProFlow IA | El Directorio Automático</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      body { background: #020617; color: white; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; margin: 0; }
-      .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
-      h1 { color: #38bdf8; text-align: center; margin-bottom: 10px; font-size: 2.5rem; }
-      p.subtitle { text-align: center; color: #64748b; margin-bottom: 50px; }
-      
-      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-      .card { background: #0f172a; padding: 25px; border-radius: 16px; border: 1px solid #1e293b; text-decoration: none; color: white; transition: all 0.3s ease; display: flex; flex-direction: column; }
-      .card:hover { border-color: #38bdf8; transform: translateY(-8px); box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15); }
-      
-      .card h2 { margin: 10px 0; color: #38bdf8; font-size: 1.4rem; line-height: 1.2; flex-grow: 1; }
-      .badge { background: #0ea5e9; font-size: 0.7rem; padding: 4px 12px; border-radius: 50px; font-weight: bold; color: #020617; width: fit-content; }
-      .date { color: #64748b; font-size: 0.85rem; margin-top: 15px; border-top: 1px solid #1e293b; padding-top: 10px; }
-      
-      .empty-state { text-align: center; padding: 60px; background: #0f172a; border-radius: 20px; border: 1px dashed #334155; }
+    <title>{title} | ProFlow IA</title>
+    <style is:global>
+      :root { --primary: #38bdf8; --bg: #020617; --card: #0f172a; }
+      body { 
+        background: var(--bg); 
+        color: white; 
+        font-family: 'Segoe UI', system-ui, sans-serif; 
+        margin: 0;
+      }
+      .glass { 
+        background: rgba(15, 23, 42, 0.8); 
+        backdrop-filter: blur(12px); 
+        border: 1px solid rgba(255,255,255,0.1); 
+      }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>🚀 ProFlow IA</h1>
-      <p class="subtitle">Noticias reales de tecnología generadas por IA</p>
-
-      {posts.length > 0 ? (
-        <div class="grid">
-          {posts.map(post => (
-            <a href={post.url} class="card">
-              <span class="badge">ACTUALIDAD ⚡</span>
-              <h2>{post.frontmatter.title}</h2>
-              <div class="date">📅 {post.frontmatter.fecha}</div>
-            </a>
-          ))}
-        </div>
-      ) : (
-        <div class="empty-state">
-          <h2 style="color: #94a3b8;">📡 El bot está investigando...</h2>
-          <p style="color: #64748b;">Pronto aparecerán aquí las noticias reales más recientes de marzo 2026.</p>
-        </div>
-      )}
-    </div>
-  </body>
+    <slot /> </body>
 </html>
