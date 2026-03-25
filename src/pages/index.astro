@@ -1,10 +1,22 @@
 ---
 let posts = [];
 try {
-  const allPosts = import.meta.glob('./herramientas/*.md', { eager: true });
+  // Esta es la forma más compatible de buscar archivos en Astro/Vercel
+  const allPosts = import.meta.glob(['./herramientas/*.md', '/src/pages/herramientas/*.md', '../pages/herramientas/*.md'], { eager: true });
+  
   posts = Object.values(allPosts);
-  posts.sort((a, b) => new Date(b.frontmatter.fecha) - new Date(a.frontmatter.fecha));
-} catch (e) { posts = []; }
+
+  // Ordenar: Las noticias con fecha más reciente arriba
+  if (posts.length > 0) {
+    posts.sort((a, b) => {
+      const dateA = new Date(a.frontmatter.fecha || 0);
+      const dateB = new Date(b.frontmatter.fecha || 0);
+      return dateB - dateA;
+    });
+  }
+} catch (e) {
+  console.error("Fallo crítico en el núcleo:", e);
+}
 ---
 
 <html lang="es">
