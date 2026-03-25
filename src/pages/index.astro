@@ -1,15 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-// Importación segura de noticias para Vercel
+// Usamos una ruta más simple y directa para evitar que Astro se trabe
 const allPosts = import.meta.glob('./herramientas/*.md', { eager: true });
 const posts = Object.values(allPosts);
 
-// Ordenar por fecha (más reciente primero)
-if (posts.length > 0) {
+// Solo ordenamos si realmente hay archivos, si no, saltamos el paso
+if (posts && posts.length > 0) {
   posts.sort((a, b) => {
-    const dateA = new Date(a.frontmatter.fecha || 0).getTime();
-    const dateB = new Date(b.frontmatter.fecha || 0).getTime();
+    const dateA = new Date(a.frontmatter?.fecha || 0).getTime();
+    const dateB = new Date(b.frontmatter?.fecha || 0).getTime();
     return dateB - dateA;
   });
 }
