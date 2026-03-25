@@ -2,8 +2,8 @@ name: ProFlow News Bot 2026
 
 on:
   schedule:
-    - cron: '0 12 * * *' # Se ejecuta todos los días a las 12:00
-  workflow_dispatch: # Esto te permite darle al botón "Play" manualmente
+    - cron: '0 12 * * *'
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,28 +21,38 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          # Este script de una línea le pide la noticia a Google y la guarda en un .md
-          node -e "
+          cat << 'EOF' > news-script.cjs
+          const fs = require('fs');
+
           async function run() {
-            const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: 'Genera una noticia técnica de marzo 2026 sobre hardware en Costa Rica. Devuelve SOLO formato Markdown con frontmatter: --- title: \"Titulo\" fecha: \"2026-03-25\" --- y contenido.' }] }]
-              })
-            });
-            const data = await resp.json();
-            const content = data.candidates[0].content.parts[0].text;
-            const fs = require('fs');
-            const fileName = 'src/pages/herramientas/noticia-' + Date.now() + '.md';
-            fs.writeFileSync(fileName, content);
+            try {
+              const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: 'Genera una noticia técnica de marzo 2026 sobre hardware en Costa Rica. Devuelve SOLO formato Markdown con frontmatter: --- title: "Titulo" fecha: "2026-03-25" layout: "../../layouts/Layout.astro" --- y contenido.' }] }]
+                })
+              });
+              
+              const data = await resp.json();
+              const content = data.candidates[0].content.parts[0].text;
+              
+              const fileName = `src/pages/herramientas/noticia-${Date.now()}.md`;
+              fs.writeFileSync(fileName, content);
+              console.log('Noticia creada: ' + fileName);
+            } catch (err) {
+              console.error('Error:', err);
+              process.exit(1);
+            }
           }
-          run();"
+          run();
+          EOF
+          node news-script.cjs
 
       - name: Commit y Push de la noticia
         run: |
           git config --global user.name 'ProFlow-Bot'
           git config --global user.email 'bot@proflow.ia'
           git add .
-          git commit -m "🤖 Bot: Nueva noticia de hardware detectada"
-          git push
+          # Solo hacer commit si hay archivos nuevos para evitar errores
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Bot: Nueva noticia detectada" && git push)
